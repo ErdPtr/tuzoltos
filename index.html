@@ -265,10 +265,20 @@
                             f.timer = 0;
                             s.grid[f.col].fire = 1.0;
                             spawnBurst(f.x, GROUND_Y, '#ff8800', 12);
+                            if (s.player.col === f.col) {
+                                flash('TÖRMELÉK ELÜTÖTT!', '#ff4400');
+                                setTimeout(() => endGame(false), 600);
+                                return;
+                            }
                         } else if (f.type === 'explosive') {
                             f.state = 'primed';
                             f.timer = 1.8;
                             spawnBurst(f.x, GROUND_Y, '#ff4400', 10);
+                            if (s.player.col === f.col) {
+                                flash('BOMBA ELÜTÖTT!', '#ff4400');
+                                setTimeout(() => endGame(false), 600);
+                                return;
+                            }
                         }
                     }
                 }
@@ -279,6 +289,12 @@
                         f.state = 'exploding';
                         f.timer = 0.6;
                         spawnExplosion(gx(f.col), GROUND_Y, f.col);
+                        const pc = s.player.col;
+                        if (Math.abs(pc - f.col) <= 1) {
+                            flash('ROBBANÁSBAN MEGHALTÁL!', '#ff4400');
+                            setTimeout(() => endGame(false), 600);
+                            return;
+                        }
                     }
                 }
 
@@ -313,6 +329,13 @@
             }
 
             if (s.flashTimer > 0) s.flashTimer -= dt;
+
+            // Ha a játékos tűzön áll, game over
+            if (s.grid[s.player.col].fire > 0 && !s.gameOver) {
+                flash('TŰZBEN ÉGETT!', '#ff4400');
+                setTimeout(() => endGame(false), 600);
+                return;
+            }
 
             document.getElementById('hScore').textContent = s.score;
             document.getElementById('hLives').textContent = '♥'.repeat(Math.max(0, s.lives)) + '♡'.repeat(Math.max(0, 3 - s.lives));
